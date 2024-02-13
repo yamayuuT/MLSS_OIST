@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/a45059a1839045d4a68a367c66424be0/artifacts
+end_time: 1704676795413
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: a45059a1839045d4a68a367c66424be0
+run_name: luxuriant-sloth-683
+run_uuid: a45059a1839045d4a68a367c66424be0
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704676795327
+status: 3
+tags: []
+user_id: yamayuu

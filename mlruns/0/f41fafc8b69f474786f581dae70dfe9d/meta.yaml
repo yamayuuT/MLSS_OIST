@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/f41fafc8b69f474786f581dae70dfe9d/artifacts
+end_time: 1705765453231
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: f41fafc8b69f474786f581dae70dfe9d
+run_name: MCMC 72次元
+run_uuid: f41fafc8b69f474786f581dae70dfe9d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1705763543018
+status: 3
+tags: []
+user_id: yamayuu

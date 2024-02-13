@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/3686b36df65147a4a21c547b0a4a980a/artifacts
+end_time: 1704676295368
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 3686b36df65147a4a21c547b0a4a980a
+run_name: luminous-sloth-691
+run_uuid: 3686b36df65147a4a21c547b0a4a980a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704676295283
+status: 3
+tags: []
+user_id: yamayuu

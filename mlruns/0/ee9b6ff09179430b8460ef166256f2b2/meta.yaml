@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/ee9b6ff09179430b8460ef166256f2b2/artifacts
+end_time: 1705978805000
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ee9b6ff09179430b8460ef166256f2b2
+run_name: Advantage_4.1 63次元
+run_uuid: ee9b6ff09179430b8460ef166256f2b2
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1705978332266
+status: 3
+tags: []
+user_id: yamayuu

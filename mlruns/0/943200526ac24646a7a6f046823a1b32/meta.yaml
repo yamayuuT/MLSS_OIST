@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/943200526ac24646a7a6f046823a1b32/artifacts
+end_time: 1706595366725
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 943200526ac24646a7a6f046823a1b32
+run_name: Reverse annealing Boltzmann Machine Training
+run_uuid: 943200526ac24646a7a6f046823a1b32
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1706595358336
+status: 4
+tags: []
+user_id: yamayuu

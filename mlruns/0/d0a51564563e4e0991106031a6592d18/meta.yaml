@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/d0a51564563e4e0991106031a6592d18/artifacts
+end_time: 1704614455266
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: d0a51564563e4e0991106031a6592d18
+run_name: wなしbin幅3での実験
+run_uuid: d0a51564563e4e0991106031a6592d18
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704613936619
+status: 3
+tags: []
+user_id: yamayuu

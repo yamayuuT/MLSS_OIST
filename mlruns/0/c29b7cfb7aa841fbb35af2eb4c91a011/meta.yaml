@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/c29b7cfb7aa841fbb35af2eb4c91a011/artifacts
+end_time: 1704677145126
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: c29b7cfb7aa841fbb35af2eb4c91a011
+run_name: gifted-rat-768
+run_uuid: c29b7cfb7aa841fbb35af2eb4c91a011
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704677145027
+status: 3
+tags: []
+user_id: yamayuu

@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/9072cfc52a3e4148ad6e75d91b650491/artifacts
+end_time: 1704703453691
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 9072cfc52a3e4148ad6e75d91b650491
+run_name: welcoming-stag-97
+run_uuid: 9072cfc52a3e4148ad6e75d91b650491
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704703446895
+status: 3
+tags: []
+user_id: yamayuu

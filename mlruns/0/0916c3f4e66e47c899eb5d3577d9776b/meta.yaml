@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/0916c3f4e66e47c899eb5d3577d9776b/artifacts
+end_time: 1704678247144
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 0916c3f4e66e47c899eb5d3577d9776b
+run_name: adorable-hog-848
+run_uuid: 0916c3f4e66e47c899eb5d3577d9776b
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704678246523
+status: 3
+tags: []
+user_id: yamayuu

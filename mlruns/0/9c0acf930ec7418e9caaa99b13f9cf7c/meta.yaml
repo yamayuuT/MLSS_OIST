@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/9c0acf930ec7418e9caaa99b13f9cf7c/artifacts
+end_time: 1705625144335
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 9c0acf930ec7418e9caaa99b13f9cf7c
+run_name: 18Dimension RPのみを読み込み
+run_uuid: 9c0acf930ec7418e9caaa99b13f9cf7c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1705625105292
+status: 3
+tags: []
+user_id: yamayuu

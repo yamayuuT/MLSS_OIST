@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/091c8d80a86245f4a19e751bb69a8a99/artifacts
+end_time: 1704676870899
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 091c8d80a86245f4a19e751bb69a8a99
+run_name: delightful-trout-788
+run_uuid: 091c8d80a86245f4a19e751bb69a8a99
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704676870760
+status: 3
+tags: []
+user_id: yamayuu

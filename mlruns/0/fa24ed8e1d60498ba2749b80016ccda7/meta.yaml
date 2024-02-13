@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/fa24ed8e1d60498ba2749b80016ccda7/artifacts
+end_time: 1704620344696
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: fa24ed8e1d60498ba2749b80016ccda7
+run_name: wなしbin幅20での実験
+run_uuid: fa24ed8e1d60498ba2749b80016ccda7
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704619819492
+status: 3
+tags: []
+user_id: yamayuu

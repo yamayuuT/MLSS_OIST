@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/422dfced6a8f458fb9f5f310ca30c119/artifacts
+end_time: 1704648174630
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 422dfced6a8f458fb9f5f310ca30c119
+run_name: Shot 5
+run_uuid: 422dfced6a8f458fb9f5f310ca30c119
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704648136367
+status: 3
+tags: []
+user_id: yamayuu

@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/7a8467f821c843c6a6a023fe16eb3341/artifacts
+end_time: 1705417042931
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 7a8467f821c843c6a6a023fe16eb3341
+run_name: D-wave 6.3 18次元計算結果
+run_uuid: 7a8467f821c843c6a6a023fe16eb3341
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1705416879111
+status: 3
+tags: []
+user_id: yamayuu

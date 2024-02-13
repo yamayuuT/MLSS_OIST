@@ -1,0 +1,16 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/cb85801908ea4d7086a75b7c71931358/artifacts
+deleted_time: 1705761923387
+end_time: 1705757552036
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: deleted
+run_id: cb85801908ea4d7086a75b7c71931358
+run_name: 18Dimension Boltzmann Machine Training
+run_uuid: cb85801908ea4d7086a75b7c71931358
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1705757406164
+status: 3
+tags: []
+user_id: yamayuu

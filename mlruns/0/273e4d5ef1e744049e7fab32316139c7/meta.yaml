@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/273e4d5ef1e744049e7fab32316139c7/artifacts
+end_time: 1704593857072
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 273e4d5ef1e744049e7fab32316139c7
+run_name: Boltzmann Machine Training - Shot 2
+run_uuid: 273e4d5ef1e744049e7fab32316139c7
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704593776796
+status: 3
+tags: []
+user_id: yamayuu

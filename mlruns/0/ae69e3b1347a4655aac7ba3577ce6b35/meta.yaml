@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/ae69e3b1347a4655aac7ba3577ce6b35/artifacts
+end_time: 1706536726397
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ae69e3b1347a4655aac7ba3577ce6b35
+run_name: Reverse 10epochごと
+run_uuid: ae69e3b1347a4655aac7ba3577ce6b35
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1706536402933
+status: 3
+tags: []
+user_id: yamayuu

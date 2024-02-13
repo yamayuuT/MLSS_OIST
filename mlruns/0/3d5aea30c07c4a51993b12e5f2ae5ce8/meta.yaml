@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/3d5aea30c07c4a51993b12e5f2ae5ce8/artifacts
+end_time: 1705640077093
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 3d5aea30c07c4a51993b12e5f2ae5ce8
+run_name: soler比較Advantage_6.3 sample=30, reads=20, epochs=120
+run_uuid: 3d5aea30c07c4a51993b12e5f2ae5ce8
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1705638376490
+status: 3
+tags: []
+user_id: yamayuu

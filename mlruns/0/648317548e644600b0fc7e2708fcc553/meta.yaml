@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/648317548e644600b0fc7e2708fcc553/artifacts
+end_time: 1704705314963
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 648317548e644600b0fc7e2708fcc553
+run_name: glamorous-quail-284
+run_uuid: 648317548e644600b0fc7e2708fcc553
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704705308508
+status: 3
+tags: []
+user_id: yamayuu

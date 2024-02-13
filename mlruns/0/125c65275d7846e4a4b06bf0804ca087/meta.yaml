@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/125c65275d7846e4a4b06bf0804ca087/artifacts
+end_time: 1705645033863
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 125c65275d7846e4a4b06bf0804ca087
+run_name: leap_Hybrid_72Dimension Boltzmann Machine Training
+run_uuid: 125c65275d7846e4a4b06bf0804ca087
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1705643458903
+status: 4
+tags: []
+user_id: yamayuu

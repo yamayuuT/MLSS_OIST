@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/38f269ed9ccf45b49790cd55d9d190db/artifacts
+end_time: 1704706717444
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 38f269ed9ccf45b49790cd55d9d190db
+run_name: enchanting-smelt-971
+run_uuid: 38f269ed9ccf45b49790cd55d9d190db
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704706710255
+status: 3
+tags: []
+user_id: yamayuu

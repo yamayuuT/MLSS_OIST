@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/f0fdd86fb4d3446396459d672cbf97c8/artifacts
+end_time: 1704677757877
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: f0fdd86fb4d3446396459d672cbf97c8
+run_name: big-snake-423
+run_uuid: f0fdd86fb4d3446396459d672cbf97c8
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704677757281
+status: 3
+tags: []
+user_id: yamayuu

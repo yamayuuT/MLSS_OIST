@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/40f5ae4c47434e87aaf2046792749a50/artifacts
+end_time: 1705404569261
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 40f5ae4c47434e87aaf2046792749a50
+run_name: leap_Hybrid_72次元_計算成功
+run_uuid: 40f5ae4c47434e87aaf2046792749a50
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1705400677109
+status: 4
+tags: []
+user_id: yamayuu
