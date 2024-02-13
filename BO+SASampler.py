@@ -4,9 +4,11 @@ import numpy as np
 import openjij as oj
 import pandas as pd
 import seaborn as sns
-from bayes_opt import BayesianOptimization
 from scipy.stats import pearsonr
 from sklearn.cluster import AgglomerativeClustering
+from skopt import gp_minimize
+from skopt.space import Real
+from skopt.utils import use_named_args
 from tqdm import tqdm
 
 # ExcelファイルからEEGデータの読み込み
@@ -123,10 +125,7 @@ class QuantumBoltzmannMachine:
             )
             energy = np.mean([self.energy(d) for d in data])
             energy_history.append(energy)
-
-        # 最終エポックのエネルギーの平均を返す
-        final_energy = np.mean(energy_history[-1])
-        return final_energy
+        return energy_history
 
 
 # サンプリングされた解の分布の可視化
@@ -202,37 +201,47 @@ def plot_annealing_schedule(schedule):
     # plt.show()
 
 
-def optimize_qbm(learning_rate):
-    qbm = QuantumBoltzmannMachine(size=size)
-    final_energy = qbm.fit(
-        combined_data,
-        epochs=epochs,
-        learning_rate=learning_rate,
-        num_samples=num_samples,
-    )
-    return -final_energy  # 最小化問題として扱うために符号を反転
-
-
 # MLflow実験の開始
-with mlflow.start_run(run_name="72Dimension Boltzmann Machine Training"):
+with mlflow.start_run(run_name="72Dimension Boltzmann Machine Training Optimized"):
+    epochs = 50
+    num_samples = 2000
+
+    # ベイズ最適化のための目的関数
+    def objective_function(learning_rate):
+        qbm = QuantumBoltzmannMachine(size=size)
+        energy_history = qbm.fit(
+            combined_data,
+            epochs=epochs,
+            learning_rate=learning_rate[0],
+            num_samples=num_samples,
+        )
+        # 最後のエネルギー値を最適化の目標とする
+        return energy_history[-1]
+
+    # 学習率のパラメータ空間を定義
+    space = [Real(1e-5, 1e-2, name="learning_rate")]
+
+    # ベイズ最適化の実行
+    @use_named_args(space)
+    def objective(**params):
+        return objective_function([params["learning_rate"]])
+
+    res = gp_minimize(objective, space, n_calls=20, random_state=0)
+
+    # 最適化された学習率の表示
+    print(f"Optimal learning rate: {res.x[0]}")
+    # 最適化されたエネルギーの表示
+    print(f"Optimal energy: {res.fun}")
+    # ベイズ最適化で見つけた最適な学習率を使用
+    optimal_learning_rate = res.x[0]  # これはベイズ最適化セクションから得られる値です
+
     num_shots = 5
-    epochs = 1000
-    learning_rate = 0.0001
-    num_samples = 10000
+    learning_rate = optimal_learning_rate  # 最適化された学習率を使用
     num_reads = 100
 
-    # sampler_choice = "SQA"  # "SQA" または "SA" を選択
-
     # QuantumBoltzmannMachine インスタンスの初期化
-    # qbm = QuantumBoltzmannMachine(size=size)
-    # ベイズ最適化オブジェクトの設定
-    optimizer = BayesianOptimization(
-        f=optimize_qbm,
-        pbounds={"learning_rate": (0.0001, 0.01)},
-        random_state=1,
-    )
-    # 最適化の実行
-    optimizer.maximize(init_points=2, n_iter=3)
+    qbm = QuantumBoltzmannMachine(size=size)
+
     # パラメータの記録
     mlflow.log_param("num_shots", num_shots)
     mlflow.log_param("epochs", epochs)
@@ -240,22 +249,11 @@ with mlflow.start_run(run_name="72Dimension Boltzmann Machine Training"):
     mlflow.log_param("num_samples", num_samples)
     mlflow.log_param("num_reads", num_reads)
     mlflow.log_param("size", size)
-    # mlflow.log_param("sampler_choice", sampler_choice)
-    # 最適なパラメータの取得
-    best_params = optimizer.max["params"]
-    mlflow.log_param(f"Best learning_rate: {best_params['learning_rate']}")
-    # 最適な学習率でモデルを訓練
-    qbm = QuantumBoltzmannMachine(size=size)
-    final_energy = qbm.fit(
-        combined_data,
-        epochs=epochs,
-        learning_rate=best_params["learning_rate"],
-        num_samples=num_samples,
-    )
-    mlflow.log_param(f"Final energy with optimized learning rate: {final_energy}")
 
     for shot in range(num_shots):
-        print(f"Starting training for 72Dim shot {shot + 1}")
+        print(
+            f"Starting training for 72Dim shot {shot + 1} with optimized learning rate"
+        )
         energy_history = qbm.fit(
             combined_data,
             epochs=epochs,
@@ -268,32 +266,36 @@ with mlflow.start_run(run_name="72Dimension Boltzmann Machine Training"):
         plt.plot(energy_history)
         plt.xlabel("Epoch")
         plt.ylabel("Energy")
-        plt.title(f"Energy History - 72Dim Shot {shot + 1}")
-        mlflow.log_figure(plt.gcf(), f"energy_history_72Dim_shot_{shot + 1}.png")
+        plt.title(
+            f"Energy History - 72Dim Shot {shot + 1} with Optimized Learning Rate"
+        )
+        mlflow.log_figure(
+            plt.gcf(), f"energy_history_optimized_72Dim_shot_{shot + 1}.png"
+        )
         plt.close()
 
         # 重みの可視化
         plt.figure(figsize=(10, 10))
         sns.heatmap(qbm.W, cmap="coolwarm", square=True)
-        # plt.colorbar()
-        plt.title("Weights Heatmap")
-        mlflow.log_figure(plt.gcf(), f"weights_72Dim_shot_{shot + 1}.png")
+        plt.title("Weights Heatmap - Optimized Learning Rate")
+        mlflow.log_figure(plt.gcf(), f"weights_optimized_72Dim_shot_{shot + 1}.png")
         plt.close()
 
         # バイアスの可視化
         plt.figure(figsize=(10, 6))
         plt.bar(range(qbm.size), qbm.b)
-        plt.title("Biases")
-        mlflow.log_figure(plt.gcf(), f"biases_72Dim_shot_{shot + 1}.png")
+        plt.title("Biases - Optimized Learning Rate")
+        mlflow.log_figure(plt.gcf(), f"biases_optimized_72Dim_shot_{shot + 1}.png")
         plt.close()
 
         # 時空間相関の分析
         correlation_matrix = calculate_correlation_matrix(qbm.W, n)
         labels = perform_clustering(correlation_matrix)
         plot_correlation_matrix(
-            correlation_matrix, "Correlation Matrix - Shot " + str(shot + 1)
+            correlation_matrix,
+            f"Correlation Matrix - Shot {shot + 1} with Optimized Learning Rate",
         )
         mlflow.log_figure(
-            plt.gcf(), "correlation_matrix_shot_" + str(shot + 1) + ".png"
+            plt.gcf(), f"correlation_matrix_optimized_shot_{shot + 1}.png"
         )
         plt.close()

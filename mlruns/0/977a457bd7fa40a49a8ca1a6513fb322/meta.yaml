@@ -1,5 +1,5 @@
 artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/977a457bd7fa40a49a8ca1a6513fb322/artifacts
-end_time: null
+end_time: 1707818321963
 entry_point_name: ''
 experiment_id: '0'
 lifecycle_stage: active
@@ -10,6 +10,6 @@ source_name: ''
 source_type: 4
 source_version: ''
 start_time: 1707813192040
-status: 1
+status: 4
 tags: []
 user_id: yamayuu
