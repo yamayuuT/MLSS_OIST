@@ -37,13 +37,16 @@ for i in range(len(binarized_data[regions[0]]) - n + 1):
 combined_data = np.array(combined_data)
 
 
-size = 18  # 18次元のベクトルを扱う
+size = 9 * n  # 18次元のベクトルを扱う
 
 
 class QuantumBoltzmannMachine:
     def __init__(self, size, sampler_choice="SQA"):
         self.size = size
-        self.W = np.zeros((size, size))
+        # ウェイトをランダムに初期化し、対称行列にする
+        W = np.random.randn(size, size) / np.sqrt(size)  # He初期化の原理に基づく
+        self.W = (W + W.T) / 2  # Wが対称行列になるように
+        # バイアスをゼロで初期化（バイアスの初期化に関しては、しばしばゼロからスタートすることが一般的です）
         self.b = np.zeros(size)
         if sampler_choice == "SQA":
             self.sampler = oj.SQASampler()
@@ -149,7 +152,7 @@ def perform_clustering(correlation_matrix):
 
 # MLflow実験の開始
 with mlflow.start_run(run_name="72Dimension Boltzmann Machine Training"):
-    num_shots = 1
+    num_shots = 2
     epochs = 100
     learning_rate = 0.009
     num_samples = 1000

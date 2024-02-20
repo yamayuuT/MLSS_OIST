@@ -41,20 +41,22 @@ size = 9 * n  # 18次元のベクトルを扱う
 
 
 class QuantumBoltzmannMachine:
-    def __init__(self, size):
+    def __init__(self, size, schedule=None):
         self.size = size
-        # 小さなランダム値で初期化
-        # self.Wをランダムな値で初期化し、対称行列にする
-        self.W = np.random.uniform(low=-0.001, high=0.001, size=(size, size))
-        self.W = (self.W + self.W.T) / 2  # 対称性を保証
-        np.fill_diagonal(self.W, 0)  # 対角要素を0に設定
-        self.b = np.random.uniform(low=-0.001, high=0.001, size=size)
+        # ウェイトをランダムに初期化し、対称行列にする
+        W = np.random.randn(size, size) / np.sqrt(size)  # He初期化の原理に基づく
+        self.W = (W + W.T) / 2  # Wが対称行列になるように
+        # バイアスをゼロで初期化（バイアスの初期化に関しては、しばしばゼロからスタートすることが一般的です）
+        # バイアスをランダムに初期化
+        self.b = np.random.randn(size) / np.sqrt(size)
         # np.fill_diagonal(self.W, 0)  # 対角要素を0に設定
+        self.schedule = schedule
         self.sampler = oj.SASampler()
 
     def energy(self, x):
         return -np.dot(x.T, np.dot(self.W, x)) - np.dot(self.b.T, x)
 
+    """
     def generate_custom_schedule(self):
         # カスタムのアニーリングスケジュールを定義
         # 例: [(0.0, beta_start), (t1, beta_mid), (t2, beta_mid), (t_final, beta_end)]
@@ -62,6 +64,7 @@ class QuantumBoltzmannMachine:
         schedule = [(0.0, 1.0), (1.0, 0.6), (9.0, 0.6), (10.0, 1.0)]
         plot_annealing_schedule(schedule)
         return schedule
+        """
 
     def sample_ising(self, num_samples):
         # イジングモデルのパラメータを準備
@@ -74,22 +77,11 @@ class QuantumBoltzmannMachine:
         # デバッグ情報の出力
         # print("Linear:", linear)
         # print("Quadratic:", quadratic)
-        """
-        if schedule is not None:
-            beta_schedule = [
-                (t, 1.0 / T) for t, T in schedule
-            ]  # OpenJijでのbetaスケジュール
-            sampleset = self.sampler.sample_ising(
-                linear, quadratic, num_reads=num_reads, schedule=beta_schedule
-            )
-        else:
-            sampleset = self.sampler.sample_ising(
-                linear, quadratic, num_reads=num_reads
-            )
-        """
 
         # SASamplerでサンプリング
-        sampleset = self.sampler.sample_ising(linear, quadratic, num_reads=num_samples)
+        sampleset = self.sampler.sample_ising(
+            linear, quadratic, num_reads=num_samples, schedule=self.schedule
+        )
         samples = sampleset.record.sample  # サンプリング結果
 
         # サンプルを{-1, 1}の形式に変換
@@ -199,29 +191,32 @@ def plot_annealing_schedule(schedule):
 
 
 # MLflow実験の開始
-with mlflow.start_run(run_name="72Dimension Boltzmann Machine Training"):
-    num_shots = 5
-    epochs = 1000
-    learning_rate = 0.0001
-    num_samples = 10000
-    num_reads = 100
+with mlflow.start_run(run_name="SASampler Boltzmann Machine Training"):
+    num_shots = 1
+    epochs = 150
+    learning_rate = 0.09
+    num_samples = 1000
+    # num_reads = 1000
 
     # sampler_choice = "SQA"  # "SQA" または "SA" を選択
 
-    # QuantumBoltzmannMachine インスタンスの初期化
-    qbm = QuantumBoltzmannMachine(size=size)
+    # カスタマイズされたアニーリングスケジュールを定義
+    custom_schedule = [[10, 1], [7, 5], [7, 15], [0.5, 20]]
+
+    # QuantumBoltzmannMachine インスタンスの初期化時にスケジュールを渡す
+    qbm = QuantumBoltzmannMachine(size=size, schedule=custom_schedule)
 
     # パラメータの記録
     mlflow.log_param("num_shots", num_shots)
     mlflow.log_param("epochs", epochs)
     mlflow.log_param("learning_rate", learning_rate)
     mlflow.log_param("num_samples", num_samples)
-    mlflow.log_param("num_reads", num_reads)
+    # mlflow.log_param("num_reads", num_reads)
     mlflow.log_param("size", size)
     # mlflow.log_param("sampler_choice", sampler_choice)
 
     for shot in range(num_shots):
-        print(f"Starting training for 72Dim shot {shot + 1}")
+        print(f"Starting training for SASampler shot {shot + 1}")
         energy_history = qbm.fit(
             combined_data,
             epochs=epochs,
@@ -234,8 +229,8 @@ with mlflow.start_run(run_name="72Dimension Boltzmann Machine Training"):
         plt.plot(energy_history)
         plt.xlabel("Epoch")
         plt.ylabel("Energy")
-        plt.title(f"Energy History - 72Dim Shot {shot + 1}")
-        mlflow.log_figure(plt.gcf(), f"energy_history_72Dim_shot_{shot + 1}.png")
+        plt.title(f"Energy History - SASampler Shot {shot + 1}")
+        mlflow.log_figure(plt.gcf(), f"energy_history_SASampler_shot_{shot + 1}.png")
         plt.close()
 
         # 重みの可視化
@@ -243,14 +238,14 @@ with mlflow.start_run(run_name="72Dimension Boltzmann Machine Training"):
         sns.heatmap(qbm.W, cmap="coolwarm", square=True)
         # plt.colorbar()
         plt.title("Weights Heatmap")
-        mlflow.log_figure(plt.gcf(), f"weights_72Dim_shot_{shot + 1}.png")
+        mlflow.log_figure(plt.gcf(), f"weights_SASampler_shot_{shot + 1}.png")
         plt.close()
 
         # バイアスの可視化
         plt.figure(figsize=(10, 6))
         plt.bar(range(qbm.size), qbm.b)
         plt.title("Biases")
-        mlflow.log_figure(plt.gcf(), f"biases_72Dim_shot_{shot + 1}.png")
+        mlflow.log_figure(plt.gcf(), f"biases_SASampler_shot_{shot + 1}.png")
         plt.close()
 
         # 時空間相関の分析

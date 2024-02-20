@@ -49,7 +49,7 @@ for i in range(len(binarized_data[regions[0]]) - 1):
 combined_data = np.array(combined_data)
 """
 
-n = 10  # 任意の次元数に変更可能
+n = 2  # 任意の次元数に変更可能
 combined_data = []
 
 # 各領域について、隣接するn個のbinを組み合わせたベクトルを作成
@@ -62,7 +62,7 @@ for i in range(len(binarized_data[regions[0]]) - n + 1):
 combined_data = np.array(combined_data)
 
 
-size = 90  # 18次元のベクトルを扱う
+size = 9 * n  # 18次元のベクトルを扱う
 
 
 def energy_function(x, W, b):
@@ -76,7 +76,10 @@ def sigmoid(x):
 class ExtendedBoltzmannMachine:
     def __init__(self, size):
         self.size = size
-        self.W = np.zeros((size, size))
+        # ウェイトをランダムに初期化し、対称行列にする
+        W = np.random.randn(size, size) / np.sqrt(size)  # He初期化の原理に基づく
+        self.W = (W + W.T) / 2  # Wが対称行列になるように
+        # バイアスをゼロで初期化（バイアスの初期化に関しては、しばしばゼロからスタートすることが一般的です）
         self.b = np.zeros(size)
 
     def energy(self, x):

@@ -99,9 +99,13 @@ class QuantumBoltzmannMachine:
         samples = 2 * samples - 1
         return samples
 
-    def fit(self, data, epochs, learning_rate, num_samples, n_lowest_samples=200):
+    def fit(
+        self, data, epochs, learning_rate, num_samples, n_lowest_samples=1500, desc=None
+    ):
         energy_history = []
-        for epoch in tqdm(range(epochs), desc="Training Progress"):
+        for epoch in tqdm(
+            range(epochs), desc="Training Quantum Boltzmann Machine", unit="epoch"
+        ):
             data_corr = np.mean([np.outer(d, d) for d in data], axis=0)
 
             # サンプリング
@@ -203,35 +207,39 @@ def plot_annealing_schedule(schedule):
 
 # MLflow実験の開始
 with mlflow.start_run(run_name="72Dimension Boltzmann Machine Training Optimized"):
-    epochs = 50
-    num_samples = 2000
+    epochs = 200
+    num_samples = 10000
 
     # ベイズ最適化のための目的関数
     def objective_function(learning_rate):
+        # ベイズ最適化の各ステップで評価する学習率を出力
+        print(f"\nEvaluating learning rate: {learning_rate[0]}")
         qbm = QuantumBoltzmannMachine(size=size)
+        # トレーニングプロセスのカスタムメッセージ
         energy_history = qbm.fit(
             combined_data,
             epochs=epochs,
             learning_rate=learning_rate[0],
             num_samples=num_samples,
+            desc=f"Evaluating learning rate: {learning_rate[0]}",  # tqdmの説明を動的に更新
         )
-        # 最後のエネルギー値を最適化の目標とする
         return energy_history[-1]
 
     # 学習率のパラメータ空間を定義
-    space = [Real(1e-5, 1e-2, name="learning_rate")]
+    space = [Real(1e-10, 1e-1, name="learning_rate")]
 
     # ベイズ最適化の実行
     @use_named_args(space)
     def objective(**params):
         return objective_function([params["learning_rate"]])
 
-    res = gp_minimize(objective, space, n_calls=20, random_state=0)
-
-    # 最適化された学習率の表示
+    # ベイズ最適化の前後にメッセージを出力
+    print("Bayesian Optimization Process: Starting\n")
+    res = gp_minimize(objective, space, n_calls=40, random_state=0)
+    print("\nBayesian Optimization Process: Completed")
     print(f"Optimal learning rate: {res.x[0]}")
-    # 最適化されたエネルギーの表示
     print(f"Optimal energy: {res.fun}")
+
     # ベイズ最適化で見つけた最適な学習率を使用
     optimal_learning_rate = res.x[0]  # これはベイズ最適化セクションから得られる値です
 
@@ -252,14 +260,16 @@ with mlflow.start_run(run_name="72Dimension Boltzmann Machine Training Optimized
 
     for shot in range(num_shots):
         print(
-            f"Starting training for 72Dim shot {shot + 1} with optimized learning rate"
+            f"\nStarting training for BO+SASampler shot {shot + 1} with optimized learning rate: {optimal_learning_rate}"
         )
         energy_history = qbm.fit(
             combined_data,
             epochs=epochs,
             learning_rate=learning_rate,
             num_samples=num_samples,
+            desc=f"Training QBM - Shot {shot + 1}",  # tqdmの説明を更新して明確にする
         )
+        print(f"Training Process: Completed for Shot {shot + 1}")
 
         # エネルギー履歴のグラフ
         plt.figure(figsize=(10, 6))

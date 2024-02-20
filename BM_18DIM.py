@@ -1,26 +1,22 @@
 import matplotlib.pyplot as plt
 import mlflow
+import networkx as nx
 import numpy as np
 
 # import cupy as cp
 import pandas as pd
-import networkx as nx
-from sklearn.model_selection import KFold
-import openjij as oj
-from dwave.system import DWaveSampler, EmbeddingComposite
-import dimod
 import seaborn as sns
+from scipy.cluster.hierarchy import dendrogram, linkage
 from scipy.spatial.distance import jensenshannon
 from scipy.stats import entropy, wasserstein_distance
-from tqdm import tqdm
-from scipy.cluster.hierarchy import dendrogram, linkage
 from sklearn.cluster import AgglomerativeClustering
+from sklearn.model_selection import KFold
+from tqdm import tqdm
+
 # from itertools
 
 # ExcelファイルからEEGデータの読み込み
-original_eeg_data = pd.read_excel(
-    "/Users/yamayuu/BoltzmannMachine_pre/RP_EEG_all.xlsx"
-)
+original_eeg_data = pd.read_excel("/Users/yamayuu/BoltzmannMachine_pre/RP_EEG_all.xlsx")
 
 
 # 初期設定
@@ -42,7 +38,7 @@ for region in regions:
     binarized_c_data = np.where(c_data > smoothed_c_data, 1, -1)
 
     binarized_data[region] = binarized_c_data
-'''
+"""
 # 隣接するbinを組み合わせて18次元ベクトルを作成
 combined_data = []
 for i in range(len(binarized_data[regions[0]]) - 1):
@@ -51,9 +47,9 @@ for i in range(len(binarized_data[regions[0]]) - 1):
     combined_data.append(combined_bin)
 
 combined_data = np.array(combined_data)
-'''
+"""
 
-#以下修正したコード、隣接したnつのbinを組み合わせてn次元ベクトルを作成
+# 以下修正したコード、隣接したnつのbinを組み合わせてn次元ベクトルを作成
 
 
 combined_data = []
@@ -79,7 +75,10 @@ def sigmoid(x):
 class ExtendedBoltzmannMachine:
     def __init__(self, size):
         self.size = size
-        self.W = np.zeros((size, size))
+        # ウェイトをランダムに初期化し、対称行列にする
+        W = np.random.randn(size, size) / np.sqrt(size)  # He初期化の原理に基づく
+        self.W = (W + W.T) / 2  # Wが対称行列になるように
+        # バイアスをゼロで初期化（バイアスの初期化に関しては、しばしばゼロからスタートすることが一般的です）
         self.b = np.zeros(size)
 
     def energy(self, x):
@@ -108,25 +107,23 @@ class ExtendedBoltzmannMachine:
             self.b += learning_rate * (
                 np.mean(data, axis=0) - np.mean(model_samples, axis=0)
             )
-            
+
             # L2正則化項（Ridge回帰）
             if lambda_l2 > 0.0:
                 self.W -= learning_rate * lambda_l2 * self.W
-            
+
             # L1正則化項（LASSO回帰）
             if lambda_l1 > 0.0:
                 self.W -= learning_rate * lambda_l1 * np.sign(self.W)
 
-            
-
             # エポックごとのエネルギー値を計算して記録
             energy = np.mean([self.energy(d) for d in data])
             energy_history.append(energy)
-            '''
+            """
             if epoch % 10 == 0:  # 例えば10エポックごとに出力
                 print(f"Epoch {epoch}: Weights:\n{self.W}")
                 print(f"Epoch {epoch}: Biases:\n{self.b}") 
-            '''   
+            """
 
         # エネルギー履歴のグラフを保存してMLflowに記録
         energy_history_filename = f"energy_history_18Dim_shot_{shot + 1}.png"
@@ -138,11 +135,13 @@ class ExtendedBoltzmannMachine:
         # mlflowに直接グラフを保存
         mlflow.log_figure(plt.gcf(), energy_history_filename)
         plt.close()
-        
+
     # 学習メソッドにクロスバリデーションを追加
-    def cross_validate(self, data, k=5, lambda_l2_range=[0.01, 0.1], lambda_l1_range=[0.01, 0.1]):
+    def cross_validate(
+        self, data, k=5, lambda_l2_range=[0.01, 0.1], lambda_l1_range=[0.01, 0.1]
+    ):
         kf = KFold(n_splits=k)
-        best_score = float('inf')
+        best_score = float("inf")
         best_lambda_l2 = None
         best_lambda_l1 = None
 
@@ -153,7 +152,14 @@ class ExtendedBoltzmannMachine:
                     self.W = np.zeros((self.size, self.size))  # 重みをリセット
                     self.b = np.zeros(self.size)  # バイアスをリセット
                     train_data, test_data = data[train_index], data[test_index]
-                    self.fit(train_data, epochs=epochs, learning_rate=learning_rate, num_samples=num_samples, lambda_l2=lambda_l2, lambda_l1=lambda_l1)
+                    self.fit(
+                        train_data,
+                        epochs=epochs,
+                        learning_rate=learning_rate,
+                        num_samples=num_samples,
+                        lambda_l2=lambda_l2,
+                        lambda_l1=lambda_l1,
+                    )
                     score = self.evaluate(test_data)  # モデルの評価メトリックを計算
                     scores.append(score)
 
@@ -164,7 +170,7 @@ class ExtendedBoltzmannMachine:
                     best_lambda_l1 = lambda_l1
 
         return best_lambda_l2, best_lambda_l1, best_score
-    
+
     def evaluate(self, data):
         """
         モデルの評価を行います。評価指標としては、データとモデルによって生成されたサンプル間の
@@ -173,11 +179,15 @@ class ExtendedBoltzmannMachine:
         """
         # モデルによるサンプルの生成
         model_samples = self.mcmc_sample(len(data))
-        
+
         # データとモデルサンプルの確率分布を推定
-        data_distribution, _ = np.histogram(data, bins=np.arange(-1.5, 2., 1.), density=True)
-        model_distribution, _ = np.histogram(model_samples, bins=np.arange(-1.5, 2., 1.), density=True)
-        
+        data_distribution, _ = np.histogram(
+            data, bins=np.arange(-1.5, 2.0, 1.0), density=True
+        )
+        model_distribution, _ = np.histogram(
+            model_samples, bins=np.arange(-1.5, 2.0, 1.0), density=True
+        )
+
         # 0確率を避けるための微小量を追加
         data_distribution += 1e-10
         model_distribution += 1e-10
@@ -199,36 +209,38 @@ class ExtendedBoltzmannMachine:
             # 可視ノードの再構成
             reconstructed_data[i] = np.sign(np.dot(self.W, hidden_states) + self.b)
         return reconstructed_data
-    
+
     def perform_clustering(self):
         # リンケージ行列を生成
-        Z = linkage(self.W, 'ward')
-        
+        Z = linkage(self.W, "ward")
+
         perform_clustering_filename = f"perform_clustering_18Dim_shot_{shot + 1}.png"
 
         # デンドログラムを描画
         plt.figure(figsize=(10, 8))
         dendrogram(Z)
-        plt.title('Dendrogram for the Clustering of Nodes')
-        plt.xlabel('Node Index')
-        plt.ylabel('Distance')
-        #plt.show()
-        mlflow.log_figure(plt.gcf(),perform_clustering_filename)
+        plt.title("Dendrogram for the Clustering of Nodes")
+        plt.xlabel("Node Index")
+        plt.ylabel("Distance")
+        # plt.show()
+        mlflow.log_figure(plt.gcf(), perform_clustering_filename)
         plt.close()
 
         # クラスタ数を指定して階層的クラスタリングを実行
         n_clusters = 2  # 例としてクラスタ数を2に設定
-        clustering_model = AgglomerativeClustering(n_clusters=n_clusters, affinity='euclidean', linkage='ward')
+        clustering_model = AgglomerativeClustering(
+            n_clusters=n_clusters, affinity="euclidean", linkage="ward"
+        )
         clustering_model.fit(self.W)
 
         # クラスタラベルを取得
         cluster_labels = clustering_model.labels_
         return cluster_labels
-    
-    #def perform_network_analysis(self):
+
+        # def perform_network_analysis(self):
         # 隣接行列からNetworkXグラフを生成
         G = nx.from_numpy_matrix(self.W)
-        
+
         # グラフの基本的な特性を計算
         num_nodes = G.number_of_nodes()
         num_edges = G.number_of_edges()
@@ -239,25 +251,25 @@ class ExtendedBoltzmannMachine:
         degree_centrality = nx.degree_centrality(G)
         betweenness_centrality = nx.betweenness_centrality(G)
         closeness_centrality = nx.closeness_centrality(G)
-        
+
         # グラフの特性を記録
         network_properties = {
-            'num_nodes': num_nodes,
-            'num_edges': num_edges,
-            'average_degree': average_degree,
-            'density': density,
-            'degree_centrality': degree_centrality,
-            'betweenness_centrality': betweenness_centrality,
-            'closeness_centrality': closeness_centrality,
+            "num_nodes": num_nodes,
+            "num_edges": num_edges,
+            "average_degree": average_degree,
+            "density": density,
+            "degree_centrality": degree_centrality,
+            "betweenness_centrality": betweenness_centrality,
+            "closeness_centrality": closeness_centrality,
         }
-        
+
         return network_properties
-    
+
     def sparsify_network(self, threshold=0.1):
         # 重み行列からスパースなグラフを作成
         G_sparse = nx.Graph()
         for i in range(self.size):
-            for j in range(i+1, self.size):
+            for j in range(i + 1, self.size):
                 if abs(self.W[i, j]) > threshold:
                     G_sparse.add_edge(i, j, weight=self.W[i, j])
 
@@ -266,20 +278,19 @@ class ExtendedBoltzmannMachine:
     def analyze_network_properties(self, G):
         # スパース化されたグラフの特性を計算
         properties = {
-            'num_nodes': G.number_of_nodes(),
-            'num_edges': G.number_of_edges(),
-            'average_clustering': nx.average_clustering(G, weight='weight'),
-            'average_shortest_path_length': nx.average_shortest_path_length(G),
+            "num_nodes": G.number_of_nodes(),
+            "num_edges": G.number_of_edges(),
+            "average_clustering": nx.average_clustering(G, weight="weight"),
+            "average_shortest_path_length": nx.average_shortest_path_length(G),
         }
 
         # スモールワールド性の評価（オプション）
         try:
-            properties['small_world_coefficient'] = nx.sigma(G, niter=100, nrand=10)
+            properties["small_world_coefficient"] = nx.sigma(G, niter=100, nrand=10)
         except:
-            properties['small_world_coefficient'] = None
+            properties["small_world_coefficient"] = None
 
         return properties
-
 
     def display_weights_and_biases(self, shot):
         weights_filename = f"weights_18Dim_shot_{shot + 1}.png"
@@ -292,23 +303,23 @@ class ExtendedBoltzmannMachine:
         plt.imshow(self.W, cmap="coolwarm", clim=(-max_abs_weight, max_abs_weight))
         plt.colorbar()
         plt.title(f"Weights - 18Dim Shot {shot + 1}")
-        #plt.savefig(weights_filename)
-        #plt.close()
-        mlflow.log_figure(plt.gcf(),weights_filename)
+        # plt.savefig(weights_filename)
+        # plt.close()
+        mlflow.log_figure(plt.gcf(), weights_filename)
         plt.close()
 
         # バイアスのグラフを保存
         plt.figure(figsize=(10, 6))
         plt.bar(range(self.size), self.b)
         plt.title(f"Biases - 18Dim Shot {shot + 1}")
-        #plt.savefig(biases_filename)
-        #plt.close()
-        mlflow.log_figure(plt.gcf(),biases_filename)
+        # plt.savefig(biases_filename)
+        # plt.close()
+        mlflow.log_figure(plt.gcf(), biases_filename)
         plt.close()
 
     def analyze_weights(self, shot):
         heatmap_filename = f"weights_heatmap_18Dim_shot_{shot + 1}.png"
-        
+
         # 軸ラベルを準備
         axis_labels = regions * 2  # 2時刻分のラベル
 
@@ -323,7 +334,7 @@ class ExtendedBoltzmannMachine:
             center=0,
             clim=(-max_abs_weight, max_abs_weight),
             xticklabels=axis_labels,
-            yticklabels=axis_labels
+            yticklabels=axis_labels,
         )
         plt.title(f"Weight Matrix Heatmap - 18Dim Shot {shot + 1}")
         plt.xlabel("i+1 time regions")
@@ -331,7 +342,6 @@ class ExtendedBoltzmannMachine:
         plt.tight_layout()  # ラベルが切れないように調整
         mlflow.log_figure(plt.gcf(), heatmap_filename)
         plt.close()
-
 
     def generate_samples(self, num_samples):
         return self.mcmc_sample(num_samples)
@@ -353,21 +363,21 @@ def calculate_wasserstein_distance(p, q):
 
 
 def plot_thresholded_heatmap(W, threshold=0.1):
-                # 重み行列のヒートマップを生成
-                plt.figure(figsize=(12, 10))
-                sns.heatmap(W, annot=True, cmap="coolwarm", center=0)
-                plt.title(f"Weight Matrix Heatmap with Threshold {threshold}")
-                plt.xlabel("i+1 time")
-                plt.ylabel("i time")
-                
-                # スレッショルドを超える重みに基づいて線を描画
-                for i in range(W.shape[0]):
-                    for j in range(W.shape[1]):
-                        if abs(W[i, j]) > threshold:
-                            plt.plot([j+0.5, j+0.5], [i-0.5, i+0.5], color='blue')
-                            plt.plot([j-0.5, j+0.5], [i+0.5, i+0.5], color='blue')
-                
-                plt.tight_layout()
+    # 重み行列のヒートマップを生成
+    plt.figure(figsize=(12, 10))
+    sns.heatmap(W, annot=True, cmap="coolwarm", center=0)
+    plt.title(f"Weight Matrix Heatmap with Threshold {threshold}")
+    plt.xlabel("i+1 time")
+    plt.ylabel("i time")
+
+    # スレッショルドを超える重みに基づいて線を描画
+    for i in range(W.shape[0]):
+        for j in range(W.shape[1]):
+            if abs(W[i, j]) > threshold:
+                plt.plot([j + 0.5, j + 0.5], [i - 0.5, i + 0.5], color="blue")
+                plt.plot([j - 0.5, j + 0.5], [i + 0.5, i + 0.5], color="blue")
+
+    plt.tight_layout()
 
 
 num_shots = 2  # 例: 3回のショット
@@ -378,7 +388,7 @@ num_samples = 1000
 lambda_l2 = 0.001  # L2正則化の係数
 lambda_l1 = 0.001  # L1正則化の係数
 
-   
+
 mlflow.end_run()
 
 # 親実行を開始
@@ -390,21 +400,27 @@ with mlflow.start_run(run_name="18Dimension Boltzmann Machine Training"):
     mlflow.log_param("lambda_l2", lambda_l2)
     mlflow.log_param("lambda_l1", lambda_l1)
 
-    
     for shot in range(num_shots):
         print(f"Starting training for 18Dim shot {shot + 1}")
-        
+
         # 子実行を開始
         with mlflow.start_run(run_name=f"Shot {shot + 1}", nested=True):
             bm = ExtendedBoltzmannMachine(size=18)
-            bm.fit(combined_data, shot=shot, epochs=epochs, learning_rate=learning_rate, num_samples=num_samples, lambda_l2=lambda_l2, lambda_l1=lambda_l1)
+            bm.fit(
+                combined_data,
+                shot=shot,
+                epochs=epochs,
+                learning_rate=learning_rate,
+                num_samples=num_samples,
+                lambda_l2=lambda_l2,
+                lambda_l1=lambda_l1,
+            )
             cluster_labels = bm.perform_clustering()
             # クラスタラベルをMLflowに記録
             mlflow.log_param(f"cluster_labels_shot_{shot + 1}", cluster_labels.tolist())
-            
-            
+
             # ネットワーク解析の実行
-            '''
+            """
             network_properties = bm.perform_network_analysis()  # ネットワーク解析メソッドの呼び出し
             for key, value in network_properties.items():
                 param_name = f"{key}_shot_{shot + 1}"  # 各ショットごとに異なるパラメータ名を使用
@@ -412,17 +428,13 @@ with mlflow.start_run(run_name="18Dimension Boltzmann Machine Training"):
                 existing_params = mlflow.get_run(child_run.info.run_id).data.params
                 if param_name not in existing_params:
                     mlflow.log_param(param_name, value)
-            '''
+            """
 
-            
-            
             G_sparse = bm.sparsify_network(threshold=0.1)
             network_properties = bm.analyze_network_properties(G_sparse)
             # ネットワークの特性をMLflowに記録
             for key, value in network_properties.items():
                 mlflow.log_param(f"{key}_shot_{shot + 1}", value)
-
-
 
             # パラメータの記録とグラフの表示・保存
             bm.display_weights_and_biases(shot)
@@ -437,7 +449,6 @@ with mlflow.start_run(run_name="18Dimension Boltzmann Machine Training"):
             generated_dist, _ = np.histogram(
                 generated_samples, bins=20, range=(-1, 1), density=True
             )
-            
 
             # 重み行列 W の例
             W_example = bm.W  # 仮の重み行列
@@ -452,7 +463,9 @@ with mlflow.start_run(run_name="18Dimension Boltzmann Machine Training"):
 
             kl_divergence = calculate_kl_divergence(original_dist, generated_dist)
             js_divergence = calculate_js_divergence(original_dist, generated_dist)
-            wasserstein_dist = calculate_wasserstein_distance(original_dist, generated_dist)
+            wasserstein_dist = calculate_wasserstein_distance(
+                original_dist, generated_dist
+            )
 
             print(f"KL Divergence (Shot {shot + 1}):", kl_divergence)
             print(f"JS Divergence (Shot {shot + 1}):", js_divergence)
@@ -460,5 +473,5 @@ with mlflow.start_run(run_name="18Dimension Boltzmann Machine Training"):
             mlflow.log_param("kl_divergence", kl_divergence)
             mlflow.log_param("js_divergence", js_divergence)
             mlflow.log_param("wasserstein_dist", wasserstein_dist)
-            
+
 mlflow.end_run()
