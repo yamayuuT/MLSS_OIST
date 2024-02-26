@@ -80,7 +80,8 @@ class ExtendedBoltzmannMachine:
         W = np.random.randn(size, size) / np.sqrt(size)  # He初期化の原理に基づく
         self.W = (W + W.T) / 2  # Wが対称行列になるように
         # バイアスをゼロで初期化（バイアスの初期化に関しては、しばしばゼロからスタートすることが一般的です）
-        self.b = np.zeros(size)
+        # self.b = np.zeros(size)
+        self.b = np.random.randn(size) / np.sqrt(size)
 
     def energy(self, x):
         return -np.dot(x.T, np.dot(self.W, x)) - np.dot(self.b.T, x)

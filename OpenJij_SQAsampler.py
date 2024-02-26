@@ -24,7 +24,7 @@ for region in regions:
     binarized_c_data = np.where(c_data > smoothed_c_data, 1, -1)
     binarized_data[region] = binarized_c_data
 
-n = 2  # 任意の次元数に変更可能
+n = 16  # 任意の次元数に変更可能
 combined_data = []
 
 # 各領域について、隣接するn個のbinを組み合わせたベクトルを作成
@@ -152,11 +152,11 @@ def perform_clustering(correlation_matrix):
 
 # MLflow実験の開始
 with mlflow.start_run(run_name="72Dimension Boltzmann Machine Training"):
-    num_shots = 2
-    epochs = 100
+    num_shots = 1
+    epochs = 200
     learning_rate = 0.009
-    num_samples = 1000
-    num_reads = 100
+    num_samples = 10000
+    num_reads = 1
 
     sampler_choice = "SQA"  # "SQA" または "SA" を選択
 

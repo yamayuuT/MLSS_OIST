@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/yamayuu/BoltzmannMachine_pre/mlruns/0/620b0b47310549a499e42f7480f9f9bf/artifacts
+end_time: 1708609676597
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 620b0b47310549a499e42f7480f9f9bf
+run_name: SASampler Boltzmann Machine Training
+run_uuid: 620b0b47310549a499e42f7480f9f9bf
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1708609288630
+status: 3
+tags: []
+user_id: yamayuu

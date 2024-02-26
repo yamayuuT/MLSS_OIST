@@ -24,7 +24,7 @@ for region in regions:
     binarized_c_data = np.where(c_data > smoothed_c_data, 1, -1)
     binarized_data[region] = binarized_c_data
 
-n = 2  # 任意の次元数に変更可能
+n = 16  # 任意の次元数に変更可能
 combined_data = []
 
 # 各領域について、隣接するn個のbinを組み合わせたベクトルを作成
@@ -41,7 +41,7 @@ size = 9 * n  # 18次元のベクトルを扱う
 
 
 class QuantumBoltzmannMachine:
-    def __init__(self, size, schedule=None):
+    def __init__(self, size, schedule):
         self.size = size
         # ウェイトをランダムに初期化し、対称行列にする
         W = np.random.randn(size, size) / np.sqrt(size)  # He初期化の原理に基づく
@@ -56,17 +56,7 @@ class QuantumBoltzmannMachine:
     def energy(self, x):
         return -np.dot(x.T, np.dot(self.W, x)) - np.dot(self.b.T, x)
 
-    """
-    def generate_custom_schedule(self):
-        # カスタムのアニーリングスケジュールを定義
-        # 例: [(0.0, beta_start), (t1, beta_mid), (t2, beta_mid), (t_final, beta_end)]
-        # ここで、betaは逆温度を指します
-        schedule = [(0.0, 1.0), (1.0, 0.6), (9.0, 0.6), (10.0, 1.0)]
-        plot_annealing_schedule(schedule)
-        return schedule
-        """
-
-    def sample_ising(self, num_samples):
+    def sample_ising(self, num_reads):
         # イジングモデルのパラメータを準備
         linear = {i: -self.b[i] for i in range(self.size)}
         quadratic = {
@@ -80,7 +70,12 @@ class QuantumBoltzmannMachine:
 
         # SASamplerでサンプリング
         sampleset = self.sampler.sample_ising(
-            linear, quadratic, num_reads=num_samples, schedule=self.schedule
+            linear,
+            quadratic,
+            num_reads=num_reads,
+            schedule=self.schedule,
+            seed=seed,
+            num_sweeps=num_sweeps,
         )
         samples = sampleset.record.sample  # サンプリング結果
 
@@ -88,7 +83,7 @@ class QuantumBoltzmannMachine:
         samples = 2 * samples - 1
         return samples
 
-    def fit(self, data, epochs, learning_rate, num_samples, n_lowest_samples=200):
+    def fit(self, data, epochs, learning_rate, num_samples, n_lowest_samples=1000):
         energy_history = []
         for epoch in tqdm(range(epochs), desc="Training Progress"):
             data_corr = np.mean([np.outer(d, d) for d in data], axis=0)
@@ -108,11 +103,18 @@ class QuantumBoltzmannMachine:
 
             # パラメータの更新
             self.W += learning_rate * (data_corr - model_corr)
-            np.fill_diagonal(self.W, 0)
+            np.fill_diagonal(self.W, 0)  # 対角成分を0に設定
             self.b += learning_rate * (
                 np.mean(data, axis=0) - np.mean(lowest_samples, axis=0)
             )
-            energy = np.mean([self.energy(d) for d in data])
+
+            # エネルギーの計算を修正
+            energy = np.mean(
+                [
+                    -0.5 * np.dot(d.T, np.dot(self.W, d)) - np.dot(self.b.T, d)
+                    for d in data
+                ]
+            )
             energy_history.append(energy)
         return energy_history
 
@@ -193,15 +195,17 @@ def plot_annealing_schedule(schedule):
 # MLflow実験の開始
 with mlflow.start_run(run_name="SASampler Boltzmann Machine Training"):
     num_shots = 1
-    epochs = 150
-    learning_rate = 0.09
-    num_samples = 1000
-    # num_reads = 1000
+    epochs = 200
+    learning_rate = 0.0004
+    num_samples = 2000
+    num_reads = 1
+    num_sweeps = 1
+    seed = 0
 
     # sampler_choice = "SQA"  # "SQA" または "SA" を選択
 
     # カスタマイズされたアニーリングスケジュールを定義
-    custom_schedule = [[10, 1], [7, 5], [7, 15], [0.5, 20]]
+    custom_schedule = [[10, 1], [8, 5], [3, 15], [0.5, 20]]
 
     # QuantumBoltzmannMachine インスタンスの初期化時にスケジュールを渡す
     qbm = QuantumBoltzmannMachine(size=size, schedule=custom_schedule)
@@ -211,8 +215,10 @@ with mlflow.start_run(run_name="SASampler Boltzmann Machine Training"):
     mlflow.log_param("epochs", epochs)
     mlflow.log_param("learning_rate", learning_rate)
     mlflow.log_param("num_samples", num_samples)
-    # mlflow.log_param("num_reads", num_reads)
+    mlflow.log_param("num_reads", num_reads)
     mlflow.log_param("size", size)
+    mlflow.log_param("seed", seed)
+    mlflow.log_param("num_sweeps", num_sweeps)
     # mlflow.log_param("sampler_choice", sampler_choice)
 
     for shot in range(num_shots):
