@@ -48,6 +48,7 @@ class ExtendedBoltzmannMachine:
     def mcmc_sample(self, num_samples):
         samples = np.zeros((num_samples, self.size))
         x = np.random.choice([1, -1], size=self.size)  # 初期状態
+
         for i in range(num_samples):
             for j in range(self.size):
                 x_proposal = np.copy(x)
@@ -55,10 +56,16 @@ class ExtendedBoltzmannMachine:
                 energy_diff = self.energy(x_proposal) - self.energy(
                     x
                 )  # エネルギー差ΔEの計算
-                # 反転確率P = min(1, exp(-ΔE))
-                if np.random.rand() < np.exp(-energy_diff):
+
+                # 遷移確率 W(x|x') の計算
+                # 反転がエネルギーを減少させる、または、確率 exp(-ΔE) に従って反転を受け入れる
+                transition_prob = min(1, np.exp(-energy_diff))
+
+                if np.random.rand() < transition_prob:
                     x = x_proposal  # 状態更新
+
             samples[i, :] = x
+
         return samples
 
     def fit(self, data, epochs, learning_rate, num_samples):
